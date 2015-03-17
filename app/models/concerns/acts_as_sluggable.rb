@@ -107,6 +107,20 @@ module ActsAsSluggable
     def relation
       super.tap { |relation| relation.extend(FinderMethods) }
     end
+
+    def find(*args)
+      regular_find?(args) ? super : find_by_slug(args)
+    end
+
+    def exists?(*args)
+      regular_find?(args) ? super : (find_by_slug(args).present? rescue false)
+    end
+
+    private
+
+    def regular_find?(args)
+      args.first.is_a?(Array) || args.first.to_i > 0
+    end
   end
 
   module FinderMethods
