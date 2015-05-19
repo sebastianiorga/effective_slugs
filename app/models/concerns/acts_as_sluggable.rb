@@ -57,7 +57,7 @@ module ActsAsSluggable
 
   included do
     before_validation :set_slug, :if => proc { should_generate_new_slug? }
-
+    before_validation :clean_slug
     validates_presence_of :slug
     validates_exclusion_of :slug, :in => EffectiveSlugs.all_excluded_slugs
     validates_format_of :slug, :with => /\A[a-zA-Z0-9_\-\/]*\z/, :message => 'only _ and - AND / symbols allowed'
@@ -89,6 +89,10 @@ module ActsAsSluggable
     true
   end
 
+  def clean_slug
+    self.slug = slug.gsub(/^\/*/, '').gsub(/\/*$/, '')
+  end
+
   def slug_source
     return title if self.respond_to?(:title)
     return name if self.respond_to?(:name)
@@ -109,14 +113,18 @@ module ActsAsSluggable
     end
 
     def find(*args)
-      regular_find?(args) ? super : find_by_slug(args)
+      regular_find?(args) ? super : clean_find_by_slug(args)
     end
 
     def exists?(*args)
-      regular_find?(args) ? super : (find_by_slug(args).present? rescue false)
+      regular_find?(args) ? super : (clean_find_by_slug(args).present? rescue false)
     end
 
     private
+
+    def clean_find_by_slug(args)
+      find_by_slug Array(args).map { |e| e.to_s.gsub(/^\/*/, '').gsub(/\/*$/, '') }
+    end
 
     def regular_find?(args)
       args.first.is_a?(Array) || args.first.to_i > 0
@@ -125,17 +133,21 @@ module ActsAsSluggable
 
   module FinderMethods
     def find(*args)
-      regular_find?(args) ? super : find_by_slug(args)
+      regular_find?(args) ? super : clean_find_by_slug(args)
     end
 
     def exists?(*args)
-      regular_find?(args) ? super : (find_by_slug(args).present? rescue false)
+      regular_find?(args) ? super : (clean_find_by_slug(args).present? rescue false)
     end
 
     private
 
     def regular_find?(args)
       args.first.is_a?(Array) || args.first.to_i > 0
+    end
+
+    def clean_find_by_slug(args)
+      find_by_slug Array(args).map { |e| e.to_s.gsub(/^\/*/, '').gsub(/\/*$/, '') }
     end
   end
 
