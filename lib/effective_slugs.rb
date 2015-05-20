@@ -16,7 +16,8 @@ module EffectiveSlugs
   private
 
   def self.get_all_excluded_slugs
-    (ActiveRecord::Base.connection.tables.map { |x| x }.compact + (EffectiveSlugs.excluded_slugs || []))
+    # (ActiveRecord::Base.connection.tables.map { |x| x }.compact + (EffectiveSlugs.excluded_slugs || []))
+    EffectiveSlugs.excluded_slugs || []
   end
 
 
