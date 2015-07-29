@@ -81,7 +81,7 @@ module ActsAsSluggable
 
       # TODO: Could make this a bit smarter about conflicts
       num_slugs = self.class.name.constantize.where(:slug => new_slug).count
-      num_slugs = self.class.name.constantize.where('slug LIKE ?', "#{new_slug}%").count if num_slugs > 0
+      num_slugs = self.class.name.constantize.where("#{self.class.table_name}.slug LIKE ?", "#{new_slug}%").count if num_slugs > 0
 
       num_slugs == 0 ? self.slug = new_slug : self.slug = "#{new_slug}-#{num_slugs}"
     end
